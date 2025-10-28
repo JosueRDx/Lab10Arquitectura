@@ -1,0 +1,53 @@
+############################
+# IDEs y configuración local
+############################
+.idea/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.sln.docstates
+
+############################
+# Build de .NET
+############################
+bin/
+obj/
+out/
+publish/
+
+############################
+# Archivos temporales
+############################
+*.tmp
+*.log
+*.cache
+*.db
+*.db-shm
+*.db-wal
+
+############################
+# Sistema operativo
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Paquetes y dependencias
+############################
+packages/
+*.nupkg
+*.snupkg
+
+############################
+# Configuración sensible
+############################
+*.env
+appsettings.Development.json
+appsettings.Local.json
+
+############################
+# Otros opcionales
+############################
+*.bak
+*.swp
