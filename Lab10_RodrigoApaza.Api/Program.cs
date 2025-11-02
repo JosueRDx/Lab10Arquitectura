@@ -1,4 +1,4 @@
-using Lab10_RodrigoApaza.Persistense.Configuration;
+using Lab10_RodrigoApaza.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
-namespace Lab10_RodrigoApaza.Persistense.Configuration;
+namespace Lab10_RodrigoApaza.Api.Configuration;
 public static class ServiceRegistrationExtensions
 {
     public static IServiceCollection AddApplicationServices(

@@ -5,7 +5,7 @@ using Lab10_RodrigoApaza.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lab10_RodrigoApaza.Persistense.Controllers;
+namespace Lab10_RodrigoApaza.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
