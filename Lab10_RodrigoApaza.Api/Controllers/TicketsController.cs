@@ -1,9 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Lab10_RodrigoApaza.Application.DTOs;
-using Lab10_RodrigoApaza.Application.Interfaces;
+using Lab10_RodrigoApaza.Application.UseCases.Tickets.Commands;
+using Lab10_RodrigoApaza.Application.UseCases.Tickets.Queries; 
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +14,13 @@ namespace Lab10_RodrigoApaza.Api.Controllers;
 [Authorize]
 public class TicketsController : ControllerBase
 {
-    private readonly ITicketService _ticketService;
+    // Ahora usamos Mediator en lugar de ITicketService
+    private readonly IMediator _mediator;
 
-    public TicketsController(ITicketService ticketService)
+    public TicketsController(IMediator mediator)
     {
-        _ticketService = ticketService;
+        // Ahora inyectamos IMediator
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -26,7 +28,9 @@ public class TicketsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TicketDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
-        var tickets = await _ticketService.GetAllAsync();
+        // Usamos una consulta para obtener todos los tickets
+        var query = new GetAllTicketsQuery();
+        var tickets = await _mediator.Send(query);
         return Ok(tickets);
     }
 
@@ -35,8 +39,10 @@ public class TicketsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<TicketDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMyTickets()
     {
-        var userId = GetCurrentUserId();
-        var tickets = await _ticketService.GetByUserAsync(userId);
+        // Usamos una consulta para obtener los tickets del usuario actual
+        var userId = GetCurrentUserId(); 
+        var query = new GetMyTicketsQuery(userId); 
+        var tickets = await _mediator.Send(query);
         return Ok(tickets);
     }
 
@@ -46,12 +52,16 @@ public class TicketsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var ticket = await _ticketService.GetByIdAsync(id);
+        // Usamos una consulta para obtener el ticket por ID
+        var query = new GetTicketByIdQuery(id);
+        var ticket = await _mediator.Send(query);
+        
         if (ticket is null)
         {
             return NotFound();
         }
 
+        // Lógica de autorización
         if (User.IsInRole("admin") || User.IsInRole("support") || ticket.UserId == GetCurrentUserId())
         {
             return Ok(ticket);
@@ -74,7 +84,10 @@ public class TicketsController : ControllerBase
         var userId = GetCurrentUserId();
         try
         {
-            var ticket = await _ticketService.CreateAsync(userId, dto);
+            // Usamos un comando para crear el ticket
+            var command = new CreateTicketCommand(userId, dto);
+            var ticket = await _mediator.Send(command);
+            
             return CreatedAtAction(nameof(GetById), new { id = ticket.TicketId }, ticket);
         }
         catch (ArgumentException ex)
@@ -89,7 +102,10 @@ public class TicketsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(Guid id, [FromBody] TicketUpdateDto dto)
     {
-        var ticket = await _ticketService.UpdateAsync(id, dto);
+        // Usamos un comando para actualizar el ticket
+        var command = new UpdateTicketCommand(id, dto);
+        var ticket = await _mediator.Send(command);
+        
         if (ticket is null)
         {
             return NotFound();
@@ -102,14 +118,20 @@ public class TicketsController : ControllerBase
     [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(Guid id)    {
-        var deleted = await _ticketService.DeleteAsync(id);
+    public async Task<IActionResult> Delete(Guid id)    
+    {
+        // Usamos un comando para eliminar el ticket
+        var command = new DeleteTicketCommand(id);
+        var deleted = await _mediator.Send(command);
+
         if (!deleted)
         {
             return NotFound();
         }
         return NoContent();
     }
+    
+    // Este método obtiene el ID del usuario actual desde los claims
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
@@ -120,4 +142,3 @@ public class TicketsController : ControllerBase
             : throw new InvalidOperationException("No se pudo determinar el usuario actual.");
     }
 }
-
