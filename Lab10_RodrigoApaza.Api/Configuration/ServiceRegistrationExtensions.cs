@@ -25,7 +25,6 @@ public static class ServiceRegistrationExtensions
         //services.AddScoped<IAuthService, AuthService>();
         //services.AddScoped<ITicketService, TicketService>();
         //services.AddScoped<IResponseService, ResponseService>();
-        //services.AddScoped<IRoleService, RoleService>();
 
         // Registra servicios de la API
         services.AddControllers();

@@ -1,5 +1,7 @@
 ﻿using Lab10_RodrigoApaza.Application.DTOs;
-using Lab10_RodrigoApaza.Application.Interfaces;
+using Lab10_RodrigoApaza.Application.UseCases.Roles.Commands;
+using Lab10_RodrigoApaza.Application.UseCases.Roles.Queries; 
+using MediatR; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,18 +12,22 @@ namespace Lab10_RodrigoApaza.Api.Controllers;
 [Authorize(Roles = "admin")]
 public class RolesController : ControllerBase
 {
-    private readonly IRoleService _roleService;
+    // Ahora usamos Mediator en lugar de IRoleService
+    private readonly IMediator _mediator; 
 
-    public RolesController(IRoleService roleService)
+    public RolesController(IMediator mediator)
     {
-        _roleService = roleService;
+        // Ahora inyectamos IMediator
+        _mediator = mediator;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RoleDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
-        var roles = await _roleService.GetAllAsync();
+        // Usamos una consulta para obtener todos los roles
+        var query = new GetAllRolesQuery();
+        var roles = await _mediator.Send(query);
         return Ok(roles);
     }
 
@@ -30,7 +36,10 @@ public class RolesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var role = await _roleService.GetByIdAsync(id);
+        // Usamos una consulta para obtener el rol por ID
+        var query = new GetRoleByIdQuery(id);
+        var role = await _mediator.Send(query);
+        
         if (role is null)
         {
             return NotFound();
@@ -41,7 +50,8 @@ public class RolesController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(RoleDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] RoleCreateDto dto)    {
+    public async Task<IActionResult> Create([FromBody] RoleCreateDto dto)    
+    {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
@@ -49,14 +59,16 @@ public class RolesController : ControllerBase
 
         try
         {
-            var role = await _roleService.CreateAsync(dto);
+            // Usamos un comando para crear el rol
+            var command = new CreateRoleCommand(dto);
+            var role = await _mediator.Send(command);
+            
             return CreatedAtAction(nameof(GetById), new { id = role.RoleId }, role);
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException ex) 
         {
             return BadRequest(new { message = ex.Message });
         }
-
     }
 
     [HttpDelete("{id:guid}")]
@@ -64,7 +76,10 @@ public class RolesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _roleService.DeleteAsync(id);
+        // Usamos un comando para eliminar el rol
+        var command = new DeleteRoleCommand(id);
+        var deleted = await _mediator.Send(command);
+        
         if (!deleted)
         {
             return NotFound();
