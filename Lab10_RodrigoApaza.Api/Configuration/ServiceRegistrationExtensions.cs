@@ -1,6 +1,7 @@
 ﻿
 using System.Text;
 using Lab10_RodrigoApaza.Application.Interfaces;
+using Lab10_RodrigoApaza.Application.MediaTr;
 using Lab10_RodrigoApaza.Infrastructure.Configuration;
 using Lab10_RodrigoApaza.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,12 +17,16 @@ public static class ServiceRegistrationExtensions
     {
         services.AddInfrastructureServices(configuration);
         
+        // Le decimos a MediatR que escanee el proyecto de la capa de aplicación
+        services.AddMediatR(cfg => 
+            cfg.RegisterServicesFromAssemblies(typeof(ApplicationAssemblyMarker).Assembly));
+        
         // Registrar servicios de la capa de aplicación
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<ITicketService, TicketService>();
-        services.AddScoped<IResponseService, ResponseService>();
-        services.AddScoped<IRoleService, RoleService>();
+        //services.AddScoped<IAuthService, AuthService>();
+        //services.AddScoped<IUserService, UserService>();
+        //services.AddScoped<ITicketService, TicketService>();
+        //services.AddScoped<IResponseService, ResponseService>();
+        //services.AddScoped<IRoleService, RoleService>();
 
         // Registra servicios de la API
         services.AddControllers();
