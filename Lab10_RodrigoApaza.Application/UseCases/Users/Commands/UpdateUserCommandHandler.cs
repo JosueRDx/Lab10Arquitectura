@@ -83,7 +83,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserD
             .ToList();
 
         var availableRoles = await roleRepository.AsQueryable()
-            .Where(r => normalizedRoles.Contains(r.RoleName.ToLowerInvariant()))
+            .Where(r => normalizedRoles.Contains(r.RoleName.ToLower()))
             .ToListAsync(cancellationToken);
 
         if (availableRoles.Count != normalizedRoles.Count)

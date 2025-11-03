@@ -90,7 +90,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         }
 
         var availableRoles = await roleRepository.AsQueryable()
-            .Where(r => normalizedRoles.Contains(r.RoleName.ToLowerInvariant()))
+            .Where(r => normalizedRoles.Contains(r.RoleName.ToLower()))
             .ToListAsync(cancellationToken);
 
         if (availableRoles.Count != normalizedRoles.Count)
