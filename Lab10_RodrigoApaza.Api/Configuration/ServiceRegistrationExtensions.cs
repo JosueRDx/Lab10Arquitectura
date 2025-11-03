@@ -1,9 +1,7 @@
 ﻿
 using System.Text;
-using Lab10_RodrigoApaza.Application.Interfaces;
 using Lab10_RodrigoApaza.Application.MediaTr;
 using Lab10_RodrigoApaza.Infrastructure.Configuration;
-using Lab10_RodrigoApaza.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -21,9 +19,6 @@ public static class ServiceRegistrationExtensions
         services.AddMediatR(cfg => 
             cfg.RegisterServicesFromAssemblies(typeof(ApplicationAssemblyMarker).Assembly));
         
-        // Registrar servicios de la capa de aplicación
-        //services.AddScoped<IAuthService, AuthService>();
-
         // Registra servicios de la API
         services.AddControllers();
         services.AddEndpointsApiExplorer();
@@ -61,7 +56,7 @@ public static class ServiceRegistrationExtensions
             });
         });
 
-        // --- Configuración de Autenticación JWT ---
+        // Configura la autenticación JWT
         services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -82,7 +77,7 @@ public static class ServiceRegistrationExtensions
                 };
             });
         
-        // Añade la autorización (necesaria para usar [Authorize])
+        // Añade el servicio de autorización 
         services.AddAuthorization();
 
         return services;

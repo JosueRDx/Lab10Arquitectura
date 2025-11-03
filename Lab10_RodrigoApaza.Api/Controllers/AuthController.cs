@@ -1,5 +1,6 @@
 ﻿using Lab10_RodrigoApaza.Application.DTOs;
-using Lab10_RodrigoApaza.Application.Interfaces;
+using Lab10_RodrigoApaza.Application.UseCases.Auth.Commands;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +10,13 @@ namespace Lab10_RodrigoApaza.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    // Ahora usamos MediatR en lugar de un servicio directo
+    private readonly IMediator _mediator;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IMediator mediator)
     {
-        _authService = authService;
+        // Ahora inyectamos el mediador
+        _mediator = mediator;
     }
     
     // Inicia sesión en el sistema y genera un token JWT.
@@ -29,7 +32,9 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
         
-        var loginResponse = await _authService.LoginAsync(loginRequest);
+        // Usamos el patrón Mediator para enviar el comando de login
+        var command = new LoginCommand(loginRequest);
+        var loginResponse = await _mediator.Send(command);
 
         if (loginResponse == null)
         {
