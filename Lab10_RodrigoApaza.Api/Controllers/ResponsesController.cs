@@ -1,7 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Lab10_RodrigoApaza.Application.DTOs;
-using Lab10_RodrigoApaza.Application.Interfaces;
+using Lab10_RodrigoApaza.Application.UseCases.Responses.Commands; 
+using Lab10_RodrigoApaza.Application.UseCases.Responses.Queries; 
+using Lab10_RodrigoApaza.Application.UseCases.Tickets.Queries; 
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +15,13 @@ namespace Lab10_RodrigoApaza.Api.Controllers;
 [Authorize]
 public class ResponsesController : ControllerBase
 {
-    private readonly IResponseService _responseService;
-    private readonly ITicketService _ticketService;
-    
-    public ResponsesController(IResponseService responseService, ITicketService ticketService)
+    // Ahora usamos Mediator en lugar de IResponseService y ITicketService
+    private readonly IMediator _mediator;
+
+    public ResponsesController(IMediator mediator)
     {
-        _responseService = responseService;
-        _ticketService = ticketService;
+        // Ahora inyectamos IMediator
+        _mediator = mediator;
     }
 
     [HttpGet("ticket/{ticketId:guid}")]
@@ -27,7 +30,9 @@ public class ResponsesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetByTicket(Guid ticketId)
     {
-        var ticket = await _ticketService.GetByIdAsync(ticketId);
+        // 1. Validación de permiso usando MediatR
+        var ticket = await _mediator.Send(new GetTicketByIdQuery(ticketId));
+        
         if (ticket is null)
         {
             return NotFound();
@@ -38,7 +43,8 @@ public class ResponsesController : ControllerBase
             return Forbid();
         }
 
-        var responses = await _responseService.GetByTicketAsync(ticketId);
+        // 2. Obtención de las respuestas usando MediatR
+        var responses = await _mediator.Send(new GetResponsesByTicketQuery(ticketId));
         return Ok(responses);
     }
 
@@ -55,7 +61,9 @@ public class ResponsesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var ticket = await _ticketService.GetByIdAsync(dto.TicketId);
+        // 1. Validación de permiso usando MediatR
+        var ticket = await _mediator.Send(new GetTicketByIdQuery(dto.TicketId));
+        
         if (ticket is null)
         {
             return NotFound(new { message = "El ticket especificado no existe." });
@@ -69,14 +77,20 @@ public class ResponsesController : ControllerBase
 
         try
         {
-            var response = await _responseService.CreateAsync(currentUserId, dto);
+            // 2. Creación de la respuesta usando MediatR
+            var command = new CreateResponseCommand(currentUserId, dto); 
+            var response = await _mediator.Send(command);
+            
             return CreatedAtAction(nameof(GetByTicket), new { ticketId = dto.TicketId }, response);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
-
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("{id:guid}")]
@@ -85,13 +99,18 @@ public class ResponsesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _responseService.DeleteAsync(id);
+        // usamos un comando para eliminar la respuesta
+        var command = new DeleteResponseCommand(id);
+        var deleted = await _mediator.Send(command);
+        
         if (!deleted)
         {
             return NotFound();
         }
         return NoContent();
     }
+    
+    // Este método auxiliar obtiene el ID del usuario actual desde los claims
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
@@ -102,5 +121,3 @@ public class ResponsesController : ControllerBase
             : throw new InvalidOperationException("No se pudo determinar el usuario actual.");
     }
 }
-
-
