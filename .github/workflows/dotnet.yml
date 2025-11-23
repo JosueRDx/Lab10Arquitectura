@@ -1,0 +1,35 @@
+name: Build and Deploy .NET Application
+
+on:
+  push:
+    branches:
+      - main # Se ejecuta al hacer push a la rama main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '9.0.x' # Ajustado a tu proyecto (la guia decia 8.0)
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build application
+      run: dotnet build --configuration Release
+
+    - name: Publish application
+      run: dotnet publish --configuration Release --output ./published
+
+    # Este paso es demostrativo según la guía, usualmente falla si no tienes servidor real configurado,
+    # pero la guía pide incluirlo.
+    - name: Deploy to server (ejemplo de despliegue)
+      run: |
+        echo "Simulando despliegue..."
+        # scp -r ./published username@server:/path/to/deploy
