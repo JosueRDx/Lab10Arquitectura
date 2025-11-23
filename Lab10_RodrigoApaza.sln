@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab10_RodrigoApaza.Persistense", "Lab10_RodrigoApaza.Persistense\Lab10_RodrigoApaza.Persistense.csproj", "{ACDA5D0A-B070-4912-A432-FA329A0DB01D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab10_RodrigoApaza.Api", "Lab10_RodrigoApaza.Api\Lab10_RodrigoApaza.Api.csproj", "{ACDA5D0A-B070-4912-A432-FA329A0DB01D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab10_RodrigoApaza.Application", "Lab10_RodrigoApaza.Application\Lab10_RodrigoApaza.Application.csproj", "{BEC55DA2-C38D-440A-A99F-273EA9BE1CA9}"
 EndProject
